@@ -21,7 +21,12 @@ require 'active_record/connection_adapters/postgresql/oid'
 #   ActiveRecordModel.each_instance_by_sql("select ...") { |model| ... }
 #
 
-OID = ActiveRecord::ConnectionAdapters::PostgreSQLAdapter::OID
+
+if ::ActiveRecord::VERSION::MAJOR <= 4
+  OID = ActiveRecord::ConnectionAdapters::PostgreSQLAdapter::OID
+else
+  OID = ActiveRecord::ConnectionAdapters::PostgreSQL::OID
+end
 
 module PostgreSQLCursor
   class Cursor
