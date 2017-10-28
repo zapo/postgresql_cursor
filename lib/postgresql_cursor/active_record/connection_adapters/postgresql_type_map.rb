@@ -5,11 +5,7 @@ module PostgreSQLCursor
       module PostgreSQLTypeMap
         # Returns the private "type_map" needed for the cursor operation
         def get_type_map # :nodoc:
-          if ::ActiveRecord::VERSION::MAJOR == 4 && ::ActiveRecord::VERSION::MINOR == 0
-            ::ActiveRecord::ConnectionAdapters::PostgreSQLAdapter::OID::TYPE_MAP
-          else
-            type_map
-          end
+          type_map
         end
       end
     end

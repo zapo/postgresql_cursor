@@ -1,5 +1,4 @@
 require 'active_record/associations/preloader'
-require 'active_record/connection_adapters/postgresql/oid'
 
 ################################################################################
 # PostgreSQLCursor: library class provides postgresql cursor for large result
@@ -20,13 +19,6 @@ require 'active_record/connection_adapters/postgresql/oid'
 #   ActiveRecordModel.each_row_by_sql("select ...") { |hash| ... }
 #   ActiveRecordModel.each_instance_by_sql("select ...") { |model| ... }
 #
-
-
-if ::ActiveRecord::VERSION::MAJOR <= 4
-  OID = ActiveRecord::ConnectionAdapters::PostgreSQLAdapter::OID
-else
-  OID = ActiveRecord::ConnectionAdapters::PostgreSQL::OID
-end
 
 module PostgreSQLCursor
   class Cursor
@@ -114,12 +106,8 @@ module PostgreSQLCursor
 
       self.to_enum(:each_tuple).each_slice(block_size) do |slice|
         records = slice.map do |row|
-          if ::ActiveRecord::VERSION::MAJOR < 4
-            klass.send(:instantiate, row)
-          else
-            @column_types ||= column_types
-            klass.send(:instantiate, row, @column_types)
-          end
+          @column_types ||= column_types
+          relation.klass.send(:instantiate, row, @column_types)
         end
 
         preloads.each do |associations|
@@ -190,10 +178,7 @@ module PostgreSQLCursor
       fields.each_with_index do |fname, i|
         ftype = @result.ftype i
         fmod  = @result.fmod i
-        types[fname] = @connection.get_type_map.fetch(ftype, fmod) { |oid, mod|
-          warn "unknown OID: #{fname}(#{oid}) (#{sql})"
-          OID::Identity.new
-        }
+        types[fname] = @connection.send(:get_oid_type, ftype, fmod, fname)
       end
 
       @column_types = types
