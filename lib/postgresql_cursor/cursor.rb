@@ -73,7 +73,7 @@ module PostgreSQLCursor
       elsif @iterate == :each_array
         self.each_array(&block)
       else
-        self.each_instance(@type, &block)
+        self.each_instance(@type.all, &block)
       end
     end
 
@@ -97,11 +97,10 @@ module PostgreSQLCursor
       rv
     end
 
-    def each_instance(klass=nil, &block)
-      klass ||= @type
+    def each_instance(relation, &block)
       block_size ||= @block_size ||= @options.fetch(:block_size) { 1000 }
 
-      preloads = klass.preload_values | klass.includes_values
+      preloads = relation.preload_values | relation.includes_values
       preloader = ::ActiveRecord::Associations::Preloader.new
 
       self.to_enum(:each_tuple).each_slice(block_size) do |slice|

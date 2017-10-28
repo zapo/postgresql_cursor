@@ -38,7 +38,7 @@ module PostgreSQLCursor
         def each_instance(options={}, &block)
           options = {:connection => self.connection}.merge(options)
           cursor = PostgreSQLCursor::Cursor.new(to_unprepared_sql, options)
-          return cursor.each_instance(self, &block) if block_given?
+          return cursor.each_instance(all, &block) if block_given?
           cursor.iterate_type(self)
         end
 
